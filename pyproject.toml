@@ -21,6 +21,7 @@ dependencies = [
     'pyyaml',
     "torch>=2.1.0",
     "ecos",
+    "loguru",
 ]
 
 [project.optional-dependencies]

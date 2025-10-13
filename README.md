@@ -38,10 +38,20 @@ More real world demonstrations are available on the [project page](https://hanru
 
 ## Installation
 
-```
-git clone https://github.com/hanruihua/NeuPAN
+``` shell
+git clone https://github.com/EnderMandS/NeuPAN
 cd NeuPAN
 pip install -e .  
+```
+
+## Docker
+
+``` shell
+docker pull ghcr.io/endermands/neupan:latest
+docker run --name neupan -itd \
+    --network=host --ipc=host \
+    -e DISPLAY=$DISPLAY \
+    ghcr.io/endermands/neupan:latest
 ```
 
 ## Run Examples on IR-SIM
