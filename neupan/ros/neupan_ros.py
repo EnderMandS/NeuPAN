@@ -94,9 +94,11 @@ class neupan_core:
         # 1. from given path
         # 2. from waypoints
         # 3. from goal position
-        rospy.Subscriber("/initial_path", Path, self.path_callback)
-        rospy.Subscriber("/neupan_waypoints", Path, self.waypoints_callback)
-        rospy.Subscriber("/neupan_goal", PoseStamped, self.goal_callback)
+        rospy.Subscriber(self.config["topic"]["path"], Path, self.path_callback)
+        rospy.Subscriber(
+            self.config["topic"]["waypoints"], Path, self.waypoints_callback
+        )
+        rospy.Subscriber(self.config["topic"]["goal"], PoseStamped, self.goal_callback)
 
     def run(self):
 
@@ -121,15 +123,17 @@ class neupan_core:
                 tf.ExtrapolationException,
             ):
                 rospy.loginfo_throttle(
-                    1,
+                    3,
                     "waiting for tf for the transform from {} to {}".format(
                         self.config["frame"]["base"], self.config["frame"]["map"]
                     ),
                 )
+                r.sleep()
                 continue
 
             if self.robot_state is None:
-                rospy.logwarn_throttle(1, "waiting for robot state")
+                rospy.logwarn_throttle(3, "waiting for robot state")
+                r.sleep()
                 continue
 
             rospy.loginfo_once(
@@ -144,7 +148,8 @@ class neupan_core:
                 # print('set initial path', self.neupan_planner.initial_path)
 
             if self.neupan_planner.initial_path is None:
-                rospy.logwarn_throttle(1, "waiting for neupan initial path")
+                rospy.logwarn_throttle(3, "waiting for neupan initial path")
+                r.sleep()
                 continue
 
             rospy.loginfo_once("initial Path Received")
@@ -236,7 +241,7 @@ class neupan_core:
             self.obstacle_points = rot_matrix @ point_array + trans_matrix
             rospy.loginfo_once("Scan obstacle points Received")
 
-            return self.obstacle_points
+            return
 
         except (
             tf.LookupException,
@@ -244,7 +249,7 @@ class neupan_core:
             tf.ExtrapolationException,
         ):
             rospy.loginfo_throttle(
-                1,
+                3,
                 "waiting for tf for the transform from {} to {}".format(
                     self.config["frame"]["lidar"], self.config["frame"]["map"]
                 ),
@@ -332,8 +337,7 @@ class neupan_core:
 
         self.goal = np.array([[x], [y], [theta]])
 
-        print(f"set neupan goal: {[x, y, theta]}")
-
+        rospy.loginfo("set neupan goal: {}".format([x, y, theta]))
         rospy.loginfo_throttle(0.1, "initial path update from goal position")
         self.neupan_planner.update_initial_path_from_goal(self.robot_state, self.goal)
         self.neupan_planner.reset()
