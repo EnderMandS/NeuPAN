@@ -1,0 +1,26 @@
+<launch>
+  <!-- 静态 TF -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_to_base"
+        args="-0.3 0 0 0 0 0 lidar base_link" />
+
+  <!-- 点云转 LaserScan 节点 -->
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pc_to_scan" output="screen">
+    <!-- 输出到 lidar 坐标系 -->
+    <param name="target_frame"        value="lidar"/>
+    <param name="transform_tolerance" value="0.05"/>
+    <!-- 仅截取高度 -->
+    <param name="min_height"          value="0.01"/>
+    <param name="max_height"          value="0.6"/>
+    <!-- 激光雷达视角 -->
+    <param name="angle_min"           value="-1.047197533"/>
+    <param name="angle_max"           value="1.047197533"/>
+    <param name="angle_increment"     value="0.008726646"/>
+    <param name="scan_time"           value="0.1"/>
+    <!-- 有效测距范围 -->
+    <param name="range_min"           value="1.0"/>
+    <param name="range_max"           value="20.0"/>
+    <!-- 主题重映射 -->
+    <remap from="cloud_in" to="/odin1/cloud_slam"/>
+    <remap from="scan"     to="/scan"/>
+  </node>
+</launch>

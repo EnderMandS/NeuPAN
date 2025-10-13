@@ -47,7 +47,7 @@ RUN wget -c https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.s
     /home/${USERNAME}/miniconda3/bin/conda init zsh && \
     /home/${USERNAME}/miniconda3/bin/conda install -n base -c conda-forge mamba -y
 
-# Install ROS 2 Humble
+# Install ROS
 RUN /home/${USERNAME}/miniconda3/bin/mamba create -n neupan && \
     /home/${USERNAME}/miniconda3/bin/conda config --env --add channels conda-forge && \
     /home/${USERNAME}/miniconda3/bin/conda config --env --remove channels defaults && \
@@ -62,6 +62,9 @@ RUN git clone --depth 1 --recursive https://github.com/EnderMandS/NeuPAN && \
 RUN echo 'eval "$(~/miniconda3/bin/mamba shell hook --shell zsh)"' >> /home/${USERNAME}/.zshrc && \
     echo "mamba activate neupan" >> /home/${USERNAME}/.zshrc && \
     echo ": 1700000000:0;roscore" >> /home/$USERNAME/.zsh_history && \
-    echo ": 1700000001:0;python neupan/ros/neupan_ros.py" >> /home/$USERNAME/.zsh_history
+    echo ": 1700000001:0;python neupan/ros/neupan_ros.py" >> /home/$USERNAME/.zsh_history && \
+    echo ": 1700000002:0;pip install -e ." >> /home/$USERNAME/.zsh_history
+
+WORKDIR /home/${USERNAME}/code/NeuPAN
 
 ENTRYPOINT [ "/bin/zsh" ]

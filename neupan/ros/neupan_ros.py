@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 neupan_core is the main class for the neupan_ros package. It is used to run the NeuPAN algorithm in the ROS framework, which subscribes to the laser scan and localization information, and publishes the velocity command to the robot.
 

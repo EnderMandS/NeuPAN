@@ -164,3 +164,8 @@ test.py
 
 .vscode/
 test.py
+
+build/
+devel/
+install/
+log/
