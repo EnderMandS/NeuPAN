@@ -1,5 +1,5 @@
 planner_config_file: "configs/planner.yaml"
-dune_checkpoint: "example/model/diff_robot_default/model_5000.pth"
+dune_checkpoint: "example/dune_train/model/go2/model_5000.pth"
 
 refresh_initial_path: False
 flip_angle: False
@@ -17,8 +17,8 @@ topic:
   waypoints: "/waypoints"
   goal: "/move_base_simple/goal"
 
-scan_range: [0.3, 10.0]
-scan_angle: [-1.047197533, 1.047197533]
+scan_range: [0.2, 10.0]
+scan_angle: [-0.7853, 0.7853]
 scan_downsample: 1
 marker_size: 0.05
 marker_z: 0.3
