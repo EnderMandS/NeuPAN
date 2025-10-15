@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Map Configuration -->
+  <arg name="map_file_path" default="" doc="Full path to map PCD file (overrides default_map_filename if provided)"/>
+  <arg name="default_map_filename" default="huide13_rotated.pcd" doc="Default map filename in relocalization/maps/ directory"/>
+  
+  <!-- Relocalization and Mapping Node -->
+  <node name="relocalization_node" pkg="relocalization" type="relocalization_node" output="screen">
+    <!-- Map file configuration -->
+    <param name="map_file_path" value="$(arg map_file_path)" />
+    <param name="default_map_filename" value="$(arg default_map_filename)" />
+    
+    <!-- Height filtering parameters for point cloud processing -->
+    <param name="min_height" value="0.0" />
+    <param name="max_height" value="2.0" />
+    
+    <!-- Grid map resolution -->
+    <param name="resolution" value="0.1" />
+    
+    <!-- Point cloud processing parameters -->
+    <param name="voxel_size" value="0.1" />
+    <param name="local_crop_size" value="5.0" />
+    
+    <!-- Crop region parameters -->
+    <param name="crop_x_min" value="0.0" />
+    <param name="crop_x_max" value="5.0" />
+    <param name="crop_y_min" value="-5.0" />
+    <param name="crop_y_max" value="5.0" />
+    <param name="max_icp_iterations" value="500" />
+     <param name="max_correspondence_distance_" value="1.0" />
+  </node>
+  
+  <!-- Optional: Launch RViz for Relocalization Visualization -->
+  <arg name="rviz" default="false" />
+  <node if="$(arg rviz)" name="rviz_relocalization" pkg="rviz" type="rviz" 
+        args="-d $(find relocalization)/config/relocalization.rviz" />
+        
+</launch>

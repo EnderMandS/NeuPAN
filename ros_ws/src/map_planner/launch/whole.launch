@@ -1,0 +1,93 @@
+<launch>
+  <arg name="map_topic" default="/map" />
+  <arg name="goal_topic" default="/move_base_simple/goal" />
+  <arg name="path_topic" default="/initial_path" />
+  <arg name="service_name" default="/map_planner/plan" />
+  <arg name="inflation_radius" default="0.25" />
+  <arg name="inflated_map_topic" default="/inflated_map" />
+  <arg name="publish_path" default="true" />
+  <arg name="arrive_topic" default="/neupan/arrive" />
+
+  <!-- Map A* Planner -->
+  <node pkg="map_planner" type="map_planner" name="map_planner" output="screen">
+    <param name="inflation_radius" value="$(arg inflation_radius)" />
+    <param name="service_name" value="$(arg service_name)" />
+    <param name="publish_path" value="$(arg publish_path)" />
+    <remap from="map" to="$(arg map_topic)" />
+    <remap from="/move_base_simple/goal" to="$(arg goal_topic)" />
+    <remap from="initial_path" to="$(arg path_topic)" />
+    <remap from="inflated_map" to="$(arg inflated_map_topic)" />
+  </node>
+
+  <!-- Goal State Machine -->
+  <arg name="goal_tolerance" default="0.3" />
+  <node pkg="map_planner" type="goal_state_machine" name="goal_state_machine" output="screen">
+    <param name="plan_service" value="$(arg service_name)" />
+    <param name="goal_tolerance" value="$(arg goal_tolerance)" />
+    <remap from="/neupan/arrive" to="$(arg arrive_topic)" />
+    <remap from="/move_base_simple/goal" to="$(arg goal_topic)" />
+  </node>
+
+  <!-- Static TF -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_to_base"
+        args="-0.3 0 0 0 0 0 lidar base_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="footprint_to_lidar"
+        args="0 0 0 0 0 0 base_footprint lidar" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom"
+        args="0 0 0 0 0 0 map odom" />
+
+  <!-- Unitree Control -->
+  <node pkg="unitree_control" type="unitree_vel_controller" name="vel_to_sdk"/>
+
+  <!-- Cloud crop node for converting point cloud to laser scan -->
+  <node pkg="fish2pinhole" type="cloud_crop_node" name="cloud_crop_node" output="screen">
+      <!-- Point cloud filtering parameters -->
+      <param name="min_confidence" value="60" />
+      <param name="z_min_ratio" value="-0.1" />  <!-- z >= -0.2 -->
+      <param name="z_max_ratio" value="0.1" />   <!-- z <= 0.2 -->
+
+      <!-- Laser scan parameters -->
+      <param name="scan_angle_range" value="45.0" />  <!-- ±40 degrees -->
+      <param name="scan_min_range" value="0.2" />
+      <param name="scan_max_range" value="4.0" />
+      <param name="scan_resolution" value="0.5" />  <!-- 0.5 degree resolution -->
+      
+      <!-- Topic names -->
+      <param name="input_topic" value="/odin1/cloud_raw" />
+      <param name="output_topic" value="/scan" />
+      <param name="frame_id" value="base_footprint" />
+      
+      <!-- Remap topics if needed -->
+      <remap from="/odin1/cloud_raw" to="/odin1/cloud_raw" />
+      <remap from="/scan" to="/scan" />
+  </node>
+
+  <arg name="map_file_path" default="" doc="Full path to map PCD file (overrides default_map_filename if provided)"/>
+  <arg name="default_map_filename" default="huide13_rotated.pcd" doc="Default map filename in relocalization/maps/ directory"/>
+  
+  <!-- Relocalization and map server -->
+  <node name="relocalization_node" pkg="relocalization" type="relocalization_node" output="screen">
+    <!-- Map file configuration -->
+    <param name="map_file_path" value="$(arg map_file_path)" />
+    <param name="default_map_filename" value="$(arg default_map_filename)" />
+    
+    <!-- Height filtering parameters for point cloud processing -->
+    <param name="min_height" value="0.0" />
+    <param name="max_height" value="2.0" />
+    
+    <!-- Grid map resolution -->
+    <param name="resolution" value="0.1" />
+    
+    <!-- Point cloud processing parameters -->
+    <param name="voxel_size" value="0.1" />
+    <param name="local_crop_size" value="5.0" />
+    
+    <!-- Crop region parameters -->
+    <param name="crop_x_min" value="0.0" />
+    <param name="crop_x_max" value="5.0" />
+    <param name="crop_y_min" value="-5.0" />
+    <param name="crop_y_max" value="5.0" />
+    <param name="max_icp_iterations" value="500" />
+     <param name="max_correspondence_distance_" value="1.0" />
+  </node>
+</launch>

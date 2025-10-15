@@ -23,6 +23,7 @@ from math import sin, cos, atan2
 import numpy as np
 import yaml
 from loguru import logger
+import time
 
 from neupan import neupan
 from neupan.util import get_transform
@@ -30,6 +31,7 @@ from neupan.util import get_transform
 import rospy
 from geometry_msgs.msg import Twist, PoseStamped, Quaternion, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry, Path
+from std_msgs.msg import Empty
 from visualization_msgs.msg import MarkerArray, Marker
 from sensor_msgs.msg import LaserScan, PointCloud2
 import tf
@@ -84,6 +86,8 @@ class neupan_core:
         self.point_markers_pub_nrmp = rospy.Publisher(
             "/nrmp_point_markers", MarkerArray, queue_size=10
         )
+        self.arrive_pub = rospy.Publisher(self.config['topic']['arrive'], Empty, queue_size=1)
+        self.last_arrive_flag: bool = False
 
         self.listener = tf.TransformListener()
 
@@ -162,14 +166,25 @@ class neupan_core:
                     1, "No obstacle points, only path tracking task will be performed"
                 )
 
+            if not self.last_arrive_flag:
+                t_start = time.time()
+
             action, info = self.neupan_planner(self.robot_state, self.obstacle_points)
+
+            if not self.last_arrive_flag:
+                t_end = time.time()
+                rospy.loginfo(
+                    f"neupan planning time: {(t_end - t_start)*1000:.1f} ms"
+                )
 
             self.stop = info["stop"]
             self.arrive = info["arrive"]
 
-            if info["arrive"]:
-                # print(action)
-                rospy.loginfo_throttle(0.1, "arrive at the target")
+            if info["arrive"] and not self.last_arrive_flag:
+                self.arrive_pub.publish(Empty())
+                rospy.loginfo("arrive at the target")
+
+            self.last_arrive_flag = info["arrive"]
 
             # publish the path and velocity
             self.plan_pub.publish(self.generate_path_msg(info["opt_state_list"]))

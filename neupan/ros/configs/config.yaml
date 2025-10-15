@@ -1,7 +1,7 @@
 planner_config_file: "configs/planner.yaml"
 dune_checkpoint: "example/dune_train/model/go2/model_5000.pth"
 
-refresh_initial_path: False
+refresh_initial_path: True
 flip_angle: False
 include_initial_path_direction: False
 
@@ -15,7 +15,8 @@ topic:
   cmd_vel: "/cmd_vel"
   path: "/initial_path"
   waypoints: "/waypoints"
-  goal: "/move_base_simple/goal"
+  goal: "/move_base_simple/goal/none"
+  arrive: "/neupan/arrive"
 
 scan_range: [0.2, 10.0]
 scan_angle: [-0.7853, 0.7853]

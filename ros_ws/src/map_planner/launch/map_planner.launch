@@ -1,0 +1,28 @@
+<launch>
+  <arg name="map_topic" default="/map" />
+  <arg name="goal_topic" default="/move_base_simple/goal" />
+  <arg name="path_topic" default="/initial_path" />
+  <arg name="service_name" default="/map_planner/plan" />
+  <arg name="inflation_radius" default="0.25" />
+  <arg name="inflated_map_topic" default="/inflated_map" />
+  <arg name="publish_path" default="true" />
+  <arg name="arrive_topic" default="/neupan/arrive" />
+
+  <node pkg="map_planner" type="map_planner" name="map_planner" output="screen">
+    <param name="inflation_radius" value="$(arg inflation_radius)" />
+    <param name="service_name" value="$(arg service_name)" />
+    <param name="publish_path" value="$(arg publish_path)" />
+    <remap from="map" to="$(arg map_topic)" />
+    <remap from="/move_base_simple/goal" to="$(arg goal_topic)" />
+    <remap from="initial_path" to="$(arg path_topic)" />
+    <remap from="inflated_map" to="$(arg inflated_map_topic)" />
+  </node>
+
+  <arg name="goal_tolerance" default="0.3" />
+  <node pkg="map_planner" type="goal_state_machine" name="goal_state_machine" output="screen">
+    <param name="plan_service" value="$(arg service_name)" />
+    <param name="goal_tolerance" value="$(arg goal_tolerance)" />
+    <remap from="/neupan/arrive" to="$(arg arrive_topic)" />
+    <remap from="/move_base_simple/goal" to="$(arg goal_topic)" />
+  </node>
+</launch>
